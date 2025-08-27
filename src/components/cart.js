@@ -1,6 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getCart, addToCart } from './api';
 
-function Cart({ cartItems }) {
+function Cart() {
+  const [cartItems, setCartItems] = useState([]);
+
+  useEffect(() => {
+    async function fetchCart() {
+      const savedCart = await getCart(); // call Lambda via API
+      setCartItems(savedCart);
+    }
+    fetchCart();
+  }, []);
+
+  const handleAddToCart = async (item) => {
+    const updatedCart = await addToCart(item); // updates DynamoDB
+    setCartItems(updatedCart); // update state
+  };
+
   return (
     <div>
       <h2>Cart</h2>
@@ -11,6 +27,10 @@ function Cart({ cartItems }) {
           ))}
         </ul>
       )}
+      {/* Example: button to add an item */}
+      <button onClick={() => handleAddToCart({ name: 'Sample', price: 10 })}>
+        Add Sample Item
+      </button>
     </div>
   );
 }
