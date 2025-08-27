@@ -1,40 +1,5 @@
-// src/components/Cart.js
 import React, { useEffect, useState } from 'react';
-
-// Base API URL for your API Gateway
-const API_BASE = "https://k41qbcto52.execute-api.us-east-1.amazonaws.com/Dev";
-
-// Fetch cart items from GET /cart
-async function getCart(userId) {
-  try {
-    const res = await fetch(`${API_BASE}/cart?userId=${userId}`);
-    if (!res.ok) throw new Error(`GET cart failed: ${res.status}`);
-    const data = await res.json();
-    return data; // should be array of items
-  } catch (err) {
-    console.error("Error fetching cart:", err);
-    return [];
-  }
-}
-
-// Add item to cart via POST /cart
-async function addToCart({ userId, productId, quantity }) {
-  try {
-    const res = await fetch(`${API_BASE}/cart`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ userId, productId, quantity })
-    });
-    if (!res.ok) throw new Error(`Add to cart failed: ${res.status}`);
-    const data = await res.json();
-    return data; // updated cart array
-  } catch (err) {
-    console.error("Error adding to cart:", err);
-    return [];
-  }
-}
+import { getCart, addToCart } from '../api/api';
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -43,20 +8,27 @@ function Cart() {
   // Fetch the cart on component mount
   useEffect(() => {
     async function fetchCart() {
-      const savedCart = await getCart(USER_ID);
-      setCartItems(savedCart);
+      try {
+        const savedCart = await getCart(); // uses GET with query param
+        setCartItems(savedCart);
+      } catch (err) {
+        console.error('Error fetching cart:', err);
+      }
     }
     fetchCart();
   }, []);
 
   // Add item to cart
   const handleAddToCart = async (item) => {
-    const updatedCart = await addToCart({
-      userId: USER_ID,
-      productId: item.id,
-      quantity: 1
-    });
-    setCartItems(updatedCart);
+    try {
+      const updatedCart = await addToCart({
+        productId: item.id, // unique product ID
+        quantity: 1
+      });
+      setCartItems(updatedCart); // update state with returned cart
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    }
   };
 
   return (

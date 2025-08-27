@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = 'https://k41qbcto52.execute-api.us-east-1.amazonaws.com/Dev';
-const USER_ID = 'testUser'; // Temporary hardcoded user
+const USER_ID = 'testUser'; // temporary hardcoded user
 
 // Fetch all products
 export const getProducts = async () => {
@@ -11,7 +11,7 @@ export const getProducts = async () => {
 
 // Fetch cart items for current user
 export const getCart = async () => {
-  // Use GET request with query parameter userId
+  // GET request with query param userId
   const response = await axios.get(`${API_BASE_URL}/cart`, {
     params: { userId: USER_ID }
   });
@@ -25,6 +25,7 @@ export const addToCart = async (item) => {
     productId: item.productId,
     quantity: item.quantity
   };
+
   const response = await axios.post(`${API_BASE_URL}/cart`, payload);
   return response.data;
 };
