@@ -1,29 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { getCart, checkoutCart } from '../api/api';
+import { getCart, addToCart, checkoutCart } from '../api/api';
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
 
+  // Load cart on mount
   useEffect(() => {
     async function fetchCart() {
-      try {
-        const savedCart = await getCart();
-        setCartItems(savedCart);
-      } catch (err) {
-        console.error('Error fetching cart:', err);
-      }
+      const savedCart = await getCart();
+      setCartItems(savedCart);
     }
     fetchCart();
   }, []);
 
+  // Add sample product to cart
+  const handleAddSample = async () => {
+    const updatedCart = await addToCart({
+      productId: 'sample-1',
+      quantity: 1
+    });
+    setCartItems(updatedCart);
+  };
+
+  // Checkout
   const handleCheckout = async () => {
-    try {
-      const result = await checkoutCart(cartItems);
-      console.log('Checkout result:', result);
-      setCartItems([]); // empty cart after checkout
-    } catch (err) {
-      console.error('Checkout error:', err);
-    }
+    const result = await checkoutCart(cartItems);
+    console.log("Checkout result:", result);
+    setCartItems([]); // clear cart on checkout
+    alert(result.message || "Checkout successful!");
   };
 
   return (
@@ -33,14 +37,18 @@ function Cart() {
         <p>Cart is empty</p>
       ) : (
         <ul>
-          {cartItems.map((item) => (
-            <li key={item.productId}>
+          {cartItems.map((item, index) => (
+            <li key={index}>
               {item.productId} - Quantity: {item.quantity}
             </li>
           ))}
         </ul>
       )}
-      {cartItems.length > 0 && <button onClick={handleCheckout}>Checkout</button>}
+
+      <button onClick={handleAddSample}>Add Sample Item</button>
+      {cartItems.length > 0 && (
+        <button onClick={handleCheckout}>Checkout</button>
+      )}
     </div>
   );
 }

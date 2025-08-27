@@ -7,23 +7,19 @@ function ProductList() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const prods = await getProducts();
-      setProducts(prods);
+      const data = await getProducts();
+      setProducts(data);
     }
     fetchProducts();
   }, []);
 
   const handleAddToCart = async (product) => {
-    try {
-      const updatedCart = await addToCart({
-        productId: product.productId,
-        quantity: 1
-      });
-      setCart(updatedCart);
-      console.log('Updated cart:', updatedCart);
-    } catch (err) {
-      console.error('Add to cart error:', err);
-    }
+    const updatedCart = await addToCart({
+      productId: product.productId,
+      quantity: 1
+    });
+    setCart(updatedCart);
+    console.log("Updated cart:", updatedCart);
   };
 
   return (
@@ -33,8 +29,8 @@ function ProductList() {
         <p>No products available</p>
       ) : (
         <ul>
-          {products.map((product) => (
-            <li key={product.productId}>
+          {products.map((product, index) => (
+            <li key={index}>
               {product.name} - ${product.price}
               <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
             </li>
