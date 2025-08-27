@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { checkoutCart } from '../api';
+import { getProducts, addToCart, checkoutCart } from '../api/api';
+
 
 function Checkout({ cartItems }) {
   const [message, setMessage] = useState('');
