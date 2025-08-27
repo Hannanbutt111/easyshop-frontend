@@ -1,50 +1,34 @@
-// src/components/ProductList.js
-import React, { useEffect, useState } from 'react';
-import { getProducts, addToCart } from '../api/api';
+import React, { useEffect, useState } from "react";
+import { getProducts, addToCart } from "../api/api";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     async function fetchProducts() {
-      setLoading(true);
-      try {
-        const prods = await getProducts();
-        setProducts(prods);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-      }
-      setLoading(false);
+      const prods = await getProducts();
+      setProducts(prods);
     }
     fetchProducts();
   }, []);
 
   const handleAddToCart = async (product) => {
-    try {
-      const updatedCart = await addToCart({
-        productId: product.productId,
-        quantity: 1
-      });
-      console.log('Updated cart:', updatedCart);
-      alert(`Added ${product.name} to cart`);
-    } catch (err) {
-      console.error('Add to cart error:', err);
-      alert('Failed to add item');
-    }
+    const updatedCart = await addToCart({ productId: product.id, quantity: 1 });
+    setCart([...updatedCart]);
+    console.log("Updated cart:", updatedCart);
   };
 
   return (
     <div>
       <h2>Products</h2>
-      {loading ? <p>Loading products...</p> : null}
       {products.length === 0 ? (
         <p>No products available</p>
       ) : (
         <ul>
           {products.map((product, index) => (
             <li key={index}>
-              {product.name} - ${product.price.toFixed(2)}
+              {product.name} - ${product.price}
               <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
             </li>
           ))}

@@ -1,19 +1,48 @@
-import React, { useState } from 'react';
-import ProductList from './components/productlist';
-import Cart from './components/cart';
-import Checkout from './components/checkout';
+// src/api/api.js
+import axios from "axios";
 
-function App() {
-  const [cartItems, setCartItems] = useState([]);
+const API_BASE_URL = "https://k41qbcto52.execute-api.us-east-1.amazonaws.com/Dev";
+const USER_ID = "testUser"; // temporary hardcoded user
 
-  return (
-    <div>
-      <h1>EasyShop</h1>
-      <ProductList setCartItems={setCartItems} />
-      <Cart cartItems={cartItems} />
-      <Checkout cartItems={cartItems} />
-    </div>
-  );
-}
+const parseLambdaBody = (response) => {
+  try {
+    return JSON.parse(response.data.body || "[]");
+  } catch (err) {
+    console.error("Failed to parse Lambda response:", err, response.data);
+    return [];
+  }
+};
 
-export default App;
+// Fetch all products
+export const getProducts = async () => {
+  const response = await axios.get(`${API_BASE_URL}/products`);
+  return response.data || [];
+};
+
+// Fetch cart
+export const getCart = async () => {
+  const response = await axios.get(`${API_BASE_URL}/cart`, {
+    params: { userId: USER_ID },
+  });
+  return parseLambdaBody(response);
+};
+
+// Add item to cart
+export const addToCart = async (item) => {
+  const payload = { userId: USER_ID, productId: item.productId, quantity: item.quantity };
+  const response = await axios.post(`${API_BASE_URL}/cart`, payload);
+  return parseLambdaBody(response);
+};
+
+// Checkout
+export const checkoutCart = async (cartItems) => {
+  const payload = {
+    userId: USER_ID,
+    cart: cartItems.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity,
+    })),
+  };
+  const response = await axios.post(`${API_BASE_URL}/checkout`, payload);
+  return parseLambdaBody(response);
+};
