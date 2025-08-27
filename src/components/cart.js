@@ -1,28 +1,29 @@
-// src/components/Cart.js
-import React, { useEffect, useState } from "react";
-import { getCart, addToCart, checkoutCart } from "../api/api";
+import React, { useEffect, useState } from 'react';
+import { getCart, checkoutCart } from '../api/api';
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
     async function fetchCart() {
-      const savedCart = await getCart();
-      setCartItems(savedCart);
+      try {
+        const savedCart = await getCart();
+        setCartItems(savedCart);
+      } catch (err) {
+        console.error('Error fetching cart:', err);
+      }
     }
     fetchCart();
   }, []);
 
-  const handleAddToCart = async (item) => {
-    const updatedCart = await addToCart({ productId: item.id, quantity: 1 });
-    setCartItems([...updatedCart]); // new array to trigger re-render
-  };
-
   const handleCheckout = async () => {
-    if (cartItems.length === 0) return alert("Cart is empty");
-    const result = await checkoutCart(cartItems);
-    alert("Checkout successful!");
-    setCartItems([]); // clear cart after checkout
+    try {
+      const result = await checkoutCart(cartItems);
+      console.log('Checkout result:', result);
+      setCartItems([]); // empty cart after checkout
+    } catch (err) {
+      console.error('Checkout error:', err);
+    }
   };
 
   return (
@@ -32,21 +33,14 @@ function Cart() {
         <p>Cart is empty</p>
       ) : (
         <ul>
-          {cartItems.map((item, index) => (
-            <li key={index}>
+          {cartItems.map((item) => (
+            <li key={item.productId}>
               {item.productId} - Quantity: {item.quantity}
             </li>
           ))}
         </ul>
       )}
-      <button
-        onClick={() =>
-          handleAddToCart({ id: "sample-1", name: "Sample Item", price: 10 })
-        }
-      >
-        Add Sample Item
-      </button>
-      <button onClick={handleCheckout}>Checkout</button>
+      {cartItems.length > 0 && <button onClick={handleCheckout}>Checkout</button>}
     </div>
   );
 }

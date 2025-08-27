@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { getProducts, addToCart } from "../api/api";
+import React, { useEffect, useState } from 'react';
+import { getProducts, addToCart } from '../api/api';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -14,9 +14,16 @@ function ProductList() {
   }, []);
 
   const handleAddToCart = async (product) => {
-    const updatedCart = await addToCart({ productId: product.id, quantity: 1 });
-    setCart([...updatedCart]);
-    console.log("Updated cart:", updatedCart);
+    try {
+      const updatedCart = await addToCart({
+        productId: product.productId,
+        quantity: 1
+      });
+      setCart(updatedCart);
+      console.log('Updated cart:', updatedCart);
+    } catch (err) {
+      console.error('Add to cart error:', err);
+    }
   };
 
   return (
@@ -26,8 +33,8 @@ function ProductList() {
         <p>No products available</p>
       ) : (
         <ul>
-          {products.map((product, index) => (
-            <li key={index}>
+          {products.map((product) => (
+            <li key={product.productId}>
               {product.name} - ${product.price}
               <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
             </li>
