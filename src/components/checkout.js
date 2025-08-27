@@ -1,9 +1,10 @@
+// Checkout.js
 import React, { useState } from 'react';
-import { getProducts, addToCart, checkoutCart } from '../api/api';
-
+import { checkoutCart } from '../api/api';
 
 function Checkout({ cartItems }) {
   const [message, setMessage] = useState('');
+  const USER_ID = 'testUser'; // This should match your user/session
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
@@ -11,8 +12,24 @@ function Checkout({ cartItems }) {
       return;
     }
 
-    const response = await checkoutCart(cartItems);
-    setMessage(response.message || 'Checkout completed!');
+    try {
+      // Lambda expects a stringified 'body' with userId and cart
+      const payload = {
+        body: JSON.stringify({
+          userId: USER_ID,
+          cart: cartItems.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity
+          }))
+        })
+      };
+
+      const response = await checkoutCart(payload);
+      setMessage(response.message || 'Checkout completed!');
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setMessage('Checkout failed. Check console for details.');
+    }
   };
 
   return (
