@@ -1,35 +1,42 @@
 // src/components/ProductList.js
 import React, { useEffect, useState } from 'react';
-import { getProducts, addToCart } from '../api/api';
+import { getProducts, addToCart, getCart } from '../api/api';
 
 function ProductList({ setCartItems }) {
   const [products, setProducts] = useState([]);
-  const USER_ID = 'testUser'; // temporary hardcoded user
+  const [loading, setLoading] = useState(true);
 
+  // Fetch products on load
   useEffect(() => {
     async function fetchProducts() {
       try {
         const data = await getProducts();
         setProducts(data);
+        // Fetch current cart for user
+        const cartData = await getCart();
+        setCartItems(cartData || []);
       } catch (err) {
-        console.error('Error fetching products:', err);
+        console.error('Error fetching products or cart:', err);
+      } finally {
+        setLoading(false);
       }
     }
     fetchProducts();
-  }, []);
+  }, [setCartItems]);
 
   const handleAddToCart = async (product) => {
     try {
       const updatedCart = await addToCart({
-        userId: USER_ID,
-        productId: product.productId, // must match DynamoDB key
+        productId: product.productId,
         quantity: 1
       });
-      setCartItems(updatedCart); // update cart in App state
+      setCartItems(updatedCart); // Update cart in App state
     } catch (err) {
       console.error('Error adding to cart:', err);
     }
   };
+
+  if (loading) return <p>Loading products...</p>;
 
   return (
     <div>
@@ -37,9 +44,9 @@ function ProductList({ setCartItems }) {
       {products.length === 0 ? (
         <p>No products available.</p>
       ) : (
-        products.map((product, idx) => (
-          <div key={idx}>
-            <p>{product.name} - ${product.price}</p>
+        products.map((product) => (
+          <div key={product.productId}>
+            <p>{product.name || product.productId} - ${product.price || 'N/A'}</p>
             <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
           </div>
         ))
