@@ -1,55 +1,76 @@
 // src/components/ProductList.js
 import React, { useEffect, useState } from 'react';
-import { getProducts, addToCart, getCart } from '../api/api';
 
-function ProductList({ setCartItems }) {
+// Base API URL for your API Gateway
+const API_BASE = "https://k41qbcto52.execute-api.us-east-1.amazonaws.com/Dev";
+
+// Fetch all products
+async function getProducts() {
+  try {
+    const res = await fetch(`${API_BASE}/products`);
+    if (!res.ok) throw new Error(`GET products failed: ${res.status}`);
+    const data = await res.json();
+    return data; // array of products
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    return [];
+  }
+}
+
+// Add item to cart via POST /cart
+async function addToCart({ userId, productId, quantity }) {
+  try {
+    const res = await fetch(`${API_BASE}/cart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ userId, productId, quantity })
+    });
+    if (!res.ok) throw new Error(`Add to cart failed: ${res.status}`);
+    const data = await res.json();
+    return data; // updated cart array
+  } catch (err) {
+    console.error("Error adding to cart:", err);
+    return [];
+  }
+}
+
+function ProductList() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const USER_ID = 'testUser'; // temporary hardcoded user
 
-  // Fetch products on load
   useEffect(() => {
     async function fetchProducts() {
-      try {
-        const data = await getProducts();
-        setProducts(data);
-        // Fetch current cart for user
-        const cartData = await getCart();
-        setCartItems(cartData || []);
-      } catch (err) {
-        console.error('Error fetching products or cart:', err);
-      } finally {
-        setLoading(false);
-      }
+      const prods = await getProducts();
+      setProducts(prods);
     }
     fetchProducts();
-  }, [setCartItems]);
+  }, []);
 
   const handleAddToCart = async (product) => {
-    try {
-      const updatedCart = await addToCart({
-        productId: product.productId,
-        quantity: 1
-      });
-      setCartItems(updatedCart); // Update cart in App state
-    } catch (err) {
-      console.error('Error adding to cart:', err);
-    }
+    const updatedCart = await addToCart({
+      userId: USER_ID,
+      productId: product.id,
+      quantity: 1
+    });
+    console.log("Updated cart:", updatedCart);
   };
-
-  if (loading) return <p>Loading products...</p>;
 
   return (
     <div>
       <h2>Products</h2>
       {products.length === 0 ? (
-        <p>No products available.</p>
+        <p>No products available</p>
       ) : (
-        products.map((product) => (
-          <div key={product.productId}>
-            <p>{product.name || product.productId} - ${product.price || 'N/A'}</p>
-            <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
-          </div>
-        ))
+        <ul>
+          {products.map((product, index) => (
+            <li key={index}>
+              {product.name} - ${product.price}
+              <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
