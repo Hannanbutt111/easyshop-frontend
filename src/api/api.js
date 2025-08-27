@@ -7,27 +7,27 @@ const USER_ID = 'testUser'; // temporary hardcoded user
 // Fetch all products
 export const getProducts = async () => {
   const response = await axios.get(`${API_BASE_URL}/products`);
-  return response.data; // array of products
+  return response.data; // products array
 };
 
 // Fetch cart items for current user
 export const getCart = async () => {
   const response = await axios.get(`${API_BASE_URL}/cart`, {
-    params: { userId: USER_ID } // send userId as query param
+    params: { userId: USER_ID }
   });
-  return response.data; // array of cart items
+  return JSON.parse(response.data.body); // parse Lambda body
 };
 
 // Add item to cart
-export const addToCart = async ({ productId, quantity }) => {
+export const addToCart = async (item) => {
   const payload = {
     userId: USER_ID,
-    productId,
-    quantity
+    productId: item.productId,
+    quantity: item.quantity
   };
 
   const response = await axios.post(`${API_BASE_URL}/cart`, payload);
-  return response.data; // updated cart array
+  return JSON.parse(response.data.body); // parse Lambda body
 };
 
 // Checkout cart
@@ -40,5 +40,5 @@ export const checkoutCart = async (cartItems) => {
     }))
   };
   const response = await axios.post(`${API_BASE_URL}/checkout`, payload);
-  return response.data;
+  return JSON.parse(response.data.body); // parse Lambda body
 };
