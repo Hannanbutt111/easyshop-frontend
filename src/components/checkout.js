@@ -4,12 +4,11 @@ import { getCart, checkoutCart } from '../api/api';
 function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const [message, setMessage] = useState('');
-  const USER_ID = 'testUser'; // Make sure no trailing space!
 
   // Load cart items on component mount
   useEffect(() => {
     const fetchCart = async () => {
-      const items = await getCart(USER_ID);
+      const items = await getCart(); // USER_ID is handled inside api.js
       setCartItems(items);
     };
     fetchCart();
@@ -21,10 +20,10 @@ function Checkout() {
       return;
     }
     try {
-      const response = await checkoutCart(USER_ID);
+      const response = await checkoutCart(); // only needs userId internally
       if (response.success) {
         setMessage(`Checkout completed! Order ID: ${response.orderId}`);
-        setCartItems([]); // Clear local cart after successful checkout
+        setCartItems([]); // Clear local cart
       } else {
         setMessage(response.message || 'Checkout failed.');
       }
