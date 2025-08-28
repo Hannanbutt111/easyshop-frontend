@@ -7,24 +7,22 @@ function Cart() {
   // Load cart on mount
   useEffect(() => {
     const fetchCart = async () => {
-      const savedCart = await getCart(); // USER_ID handled internally
+      const savedCart = await getCart();
       setCartItems(savedCart);
     };
     fetchCart();
   }, []);
 
-  // Add sample product to cart
+  // Add product to cart and fetch updated cart
   const handleAddSample = async () => {
-    const updatedCart = await addToCart({
-      productId: 'sample-1',
-      quantity: 1,
-    });
+    await addToCart({ productId: 'sample-1', quantity: 1 });
+    const updatedCart = await getCart();
     setCartItems(updatedCart);
   };
 
   // Checkout
   const handleCheckout = async () => {
-    const result = await checkoutCart(); // only userId sent internally
+    const result = await checkoutCart();
     console.log('Checkout result:', result);
     if (result.success) {
       setCartItems([]); // clear cart on successful checkout

@@ -1,31 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getCart, checkoutCart } from '../api/api';
 
 function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const [message, setMessage] = useState('');
 
-  // Load cart items on component mount
+  // Load cart items from backend
+  const fetchCart = async () => {
+    const items = await getCart();
+    setCartItems(items);
+  };
+
   useEffect(() => {
-    const fetchCart = async () => {
-      const items = await getCart(); // USER_ID is handled inside api.js
-      setCartItems(items);
-    };
     fetchCart();
   }, []);
 
+  // Checkout
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
       setMessage('Cart is empty.');
       return;
     }
     try {
-      const response = await checkoutCart(); // only needs userId internally
-      if (response.success) {
-        setMessage(`Checkout completed! Order ID: ${response.orderId}`);
-        setCartItems([]); // Clear local cart
+      const result = await checkoutCart();
+      if (result.success) {
+        setMessage(`Checkout completed! Order ID: ${result.orderId}`);
+        await fetchCart(); // refresh cart after checkout
       } else {
-        setMessage(response.message || 'Checkout failed.');
+        setMessage(result.message || 'Checkout failed.');
       }
     } catch (err) {
       console.error('Checkout error:', err);
@@ -36,7 +38,9 @@ function Checkout() {
   return (
     <div>
       <h2>Checkout</h2>
-      {cartItems.length > 0 ? (
+      {cartItems.length === 0 ? (
+        <p>Your cart is empty.</p>
+      ) : (
         <ul>
           {cartItems.map((item, index) => (
             <li key={index}>
@@ -44,8 +48,6 @@ function Checkout() {
             </li>
           ))}
         </ul>
-      ) : (
-        <p>Your cart is empty.</p>
       )}
       <button onClick={handleCheckout}>Checkout</button>
       {message && <p>{message}</p>}

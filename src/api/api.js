@@ -30,21 +30,16 @@ export const getCart = async () => {
 // Add item to cart
 export const addToCart = async (item) => {
   try {
-    if (!item || !item.productId || !item.quantity) {
-      throw new Error("Invalid item object");
-    }
-
     const payload = {
       userId: USER_ID,
       productId: item.productId,
       quantity: item.quantity,
     };
-
-    const response = await axios.post(`${API_BASE_URL}/cart`, payload);
-    return response.data || [];
+    await axios.post(`${API_BASE_URL}/cart`, payload);
+    return true; // just indicate success
   } catch (err) {
-    console.error("Add to cart error:", err.response?.data || err.message);
-    return [];
+    console.error("Add to cart error:", err);
+    return false;
   }
 };
 
